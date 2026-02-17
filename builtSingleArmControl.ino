@@ -4,7 +4,7 @@ Servo close;
 Servo mid;
 Servo far;
 
-double cords[3]= {0, 0, 0}; //x y z
+double cords[3]= {0, 50, 50}; //x y z
 
 
 void setup() {
@@ -18,8 +18,36 @@ void setup() {
 }
 
 void loop() {
-  
 
+  for(int i = 0; i < 265; i++){
+    
+  cords[1] = i;
+
+    
+  mergedChek(cords);
+
+  Serial.print("cords:"); Serial.print(cords[1]); Serial.print(cords[2]); Serial.print(cords[3]);
+  Serial.println();
+  Serial.println("close Servo pos");  Serial.print(close.read());
+  Serial.println("mid Servo pos");  Serial.print(mid.read());
+  Serial.println("far Servo pos");  Serial.print(far.read());
+  } // test moving x to just max(ish) then back to 0
+  
+  for(int i = 265; i >= 0; i--){
+    
+  cords[1] = i;
+
+    
+  mergedChek(cords);
+
+  Serial.print("cords:"); Serial.print(cords[1]); Serial.print(cords[2]); Serial.print(cords[3]);
+  Serial.println();
+  Serial.println("close Servo pos");  Serial.print(close.read());
+  Serial.println("mid Servo pos");  Serial.print(mid.read());
+  Serial.println("far Servo pos");  Serial.print(far.read());
+  }
+
+  
   
 }
 
@@ -30,7 +58,7 @@ void mergedChek(double input[3]){
   double z = input[3];
 
   
-  double maxRadius = 132.95;
+  double maxRadius = 132.95; //overall length from point of rotation to point of rotation to end point
   double tarRadius;
   double finRadius;
 
@@ -76,8 +104,8 @@ void mergedChek(double input[3]){
 
   ///////////////////////////////////////////////////////////////////////////////////////
   
-  double a = 47.6;
-  double b = 85.35;
+  double a = 47.6; // first arm segment length (ignoring the rotating intitial segment)
+  double b = 85.35;// second arm segment length
   
   
   angle2 = (180/3.14159) * (acos((sq(a) + sq(finRadius) - sq(b)) / (2*finRadius*a)));
