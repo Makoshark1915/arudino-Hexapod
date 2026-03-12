@@ -1,4 +1,6 @@
-#include <Servo.h>
+#include <Arduino.h>
+
+
 
 Servo close;
 Servo mid;
