@@ -10,8 +10,8 @@ public class walkingLoop {
     int step = 0; // variable to keep track of which step in the walking cycle we are on, will be updated every loop
 
   
-    final float[][] legsDefault = {{132.95f, 90, 60}, {132.95f, 90, 60}, {132.95f, 90, 60}, 
-    {132.95f, 90, 60}, {132.95f, 90, 60}, {132.05f, 90, 60} }; // default position for all 6 legs, will be used to set legs to a default "standing" position
+    final float[][] legsDefault = {{132.95f, 60.0f, 70.0f}, {132.95f, 60.0f, 70.0f}, {132.95f, 60.0f, 70.0f}, 
+    {132.95f, 60.0f, 70.0f}, {132.95f, 60.0f, 70.0f}, {132.95f, 60.0f, 70.0f} }; // default position for all 6 legs, will be used to set legs to a default "standing" position
 
 
     float[][] legs // moving position for all 6 legs, will be updated every loop  in the format of legs{legnumber}{x,y,z}
