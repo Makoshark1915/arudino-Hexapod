@@ -18,13 +18,13 @@ public class walkingLoop {
     = legsDefault;
 
 
-    final float mult = 1; // multiplier for how much the joystick input affects movement
+    static final float mult = 1; // multiplier for how much the joystick input affects movement
 
     static float joystickX; // variable to store the x value of the joystick input, will be updated every loop
     static float joystickY; // variable to store the y value of the joystick input, will be updated every loop
 
 
-
+    
 
 
 
@@ -51,7 +51,9 @@ public class walkingLoop {
 
       while(joystickX != 0 || joystickY != 0){ // if the joystick is not in the neutral position, run the walking cycle
        
-        
+       if (step >1) { // if we have completed the walking cycle, reset the step variable to 0 to start the cycle over again
+          step = 0;
+        } 
       
         if(step == 0){ 
           step0(joystickX, joystickY);    
@@ -63,12 +65,8 @@ public class walkingLoop {
         else if(step == 1){ // if we are in the first step of the walking cycle, run the code for the first step
           step1(joystickX, joystickY);
         }
-        else if(step == 2){ // if we are in the second step of the walking cycle, run the code for the second step
-          step2(joystickX, joystickY);
-        }
-        else if(step == 3){ // if we are in the third step of the walking cycle, run the code for the third step
-          step3(joystickX, joystickY);
-        }
+    
+        
 
 
 
@@ -77,6 +75,8 @@ public class walkingLoop {
           System.out.println("Error: Invalid step in walking cycle. Step: " + step);        
           break;  
         }
+
+        step++; // update the step variable to move to the next step in the walking cycle   
 
       }
 
@@ -92,28 +92,36 @@ public class walkingLoop {
   
 
 
-  static void step0(float joystickX, float joystickY) { //run the init step of walking cycle: group1 lift/move, group2 move
+  static void step0(float joystickX, float joystickY) { //run the init step of walking cycle: lift or drop
+
+    legs[0][2] = 0;
+    legs[3][2] = 0;
+    legs[4][2] = 0;
+
+
+
+
 
   }
 
 
 
 
-  static void step1(float joystickX, float joystickY) { // run the first step of walking cycle: group1 drop, group2 lift/move
- 
+  static void step1(float joystickX, float joystickY) { // run the first step of walking cycle: move
+
+
+
+    legs[1][1] += joystickY * mult;
+    legs[2][1] += joystickY * mult;
+    legs[5][1] += joystickY * mult;
+
+    legs[1][0] += joystickX * mult;
+    legs[2][0] += joystickX * mult;
+    legs[5][0] += joystickX * mult;
+
+
   }
 
-
-
-  static void step2(float joystickX, float joystickY) { // run the second step of walking cycle:  group1 move, group2 drop
- 
-  }
-
-
-
-  static void step3(float joystickX, float joystickY) { //run the third step of walking cycle: group1 lift/move, group2 drop/move
-
-  }
 
 
 
