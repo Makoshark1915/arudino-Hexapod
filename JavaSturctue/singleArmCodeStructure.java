@@ -18,6 +18,8 @@ public class singleArmCodeStructure {
     
     double isInRange;
    
+    while (true) {
+
 
     System.out.println("Ready for top down Check / solve for A?");
     input.nextLine();
@@ -75,8 +77,11 @@ public class singleArmCodeStructure {
       System.out.println();
     }
 
-
-
+      System.out.println("Try again? (y/n)");
+      if (input.nextLine().equalsIgnoreCase("n")) {
+        break;
+      }
+    }
 
 
   }
