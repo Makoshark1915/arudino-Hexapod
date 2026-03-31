@@ -151,7 +151,8 @@ static void moving(float joystickX, float joystickY) { // run the first step of 
   }
 
 static void reCenter() { // run re-center the legs to the default position
- 
+ legsGroup1=legsDefault;
+ legsGroup2=legsDefault;
 }
 
 static void applyChanges() { // apply the changes to the legs
