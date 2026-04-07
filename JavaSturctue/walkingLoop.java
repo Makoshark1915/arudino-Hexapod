@@ -47,22 +47,14 @@ public class walkingLoop {
 
       joystickInput(); // get the joystick input and store it in the joystickX and joystickY variables
 
-
-
-
-
-
-
-
-      if(joystickAtRest()){ // if the joystick is not in the neutral position, run the walking cycle
+      if(joystickAtRest()){ // if the joystick is at rest go to default or else, start moving
 
         reCenter(); // if the joystick is in the neutral position, run the code to re-center the legs to the default position
 
       }
 
       else{
-        moving(joystickX, joystickY);
-
+        moving(joystickX, joystickY);// the code to move the legs according to the joystick input and the current scenario of which leg group is up (only runs if the joystick is not in the neutral position )
       }
       
 
@@ -219,23 +211,27 @@ static void applyChanges() { // apply the changes to the legs
     
 }
 
-static boolean inRange() { // check's if the giver xyz values for all legs are in a reachable position
+static boolean inRange() { // check's if the given xyz values for all legs are in a reachable position
 boolean inRangeOut = true;
 
 double[] cords = new double[3];
 
-  for(int i = 0; i < 5; i++){
+
+double R1;
+double R2;
+
+  for(int i = 0; i < 6; i++){
    
     if(i<=2){
 
-      cords[0] = legsGroup1[i][0];
+      cords[0] = legsGroup1[i][0]-defaultX;
       cords[1] = legsGroup1[i][1];
       cords[2] = legsGroup1[i][2];
 
     }
     else{
 
-      cords[0] = legsGroup2[i-3][0];
+      cords[0] = legsGroup2[i-3][0]-defaultX;
       cords[1] = legsGroup2[i-3][1];
       cords[2] = legsGroup2[i-3][2];
 
@@ -243,18 +239,24 @@ double[] cords = new double[3];
 
 
     }
-      if(singleArmCodeStructure.rangeCheck(cords) == false){ // if any leg is out of range, return false
 
-        inRangeOut = false;
-        break;
 
-      }
+    R1 = Math.sqrt((cords[0]*cords[0]) + (cords[1]*cords[1]));
+    R2 = Math.sqrt((R1*R1) + (cords[2]*cords[2]));
+
+
+
+    if(R1 > defaultX || R2 > defaultX){
+      inRangeOut = false;
+      break;
+    }
+    
 
   }
 
 
 
-
+ 
   return inRangeOut;
  
 }
