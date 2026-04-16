@@ -7,6 +7,9 @@ import java.util.Scanner;
 public class singleArmCodeStructure {
   static Scanner input;
 
+  static double[] cords = new double[3]; // x, y, z coordinates of the target position for the leg
+
+
   public static void main(String[] args) {
     input = new Scanner(System.in);
 
@@ -20,11 +23,19 @@ public class singleArmCodeStructure {
    
     while (true) {
 
+      System.out.println("Enter x, y, z coordinates for the leg (separated by spaces):");
+      String[] inputCords = input.nextLine().split(" ");
+      cords[0] = Double.parseDouble(inputCords[0]);
+      cords[1] = Double.parseDouble(inputCords[1]);
+      cords[2] = Double.parseDouble(inputCords[2]);
+
+
 
     System.out.println("Ready for top down Check / solve for A?");
     input.nextLine();
 
-    methodInput = topDownCheck();
+
+    methodInput = topDownCheck(cords);
 
     
     servo1Angle = methodInput.getLast();
@@ -37,7 +48,7 @@ public class singleArmCodeStructure {
     System.out.println("Ready for front back Check / solve for B?");
     input.nextLine();
 
-    methodInput = frontBackCheck(methodInput);
+    methodInput = frontBackCheck(methodInput, cords[2]);
     isInRange = methodInput.getLast();
     methodInput.removeLast();
     
@@ -66,12 +77,12 @@ public class singleArmCodeStructure {
     System.out.println("Servo 3 angle = " + servo3Angle);
 
 
-    if (isInRange == 1.0) {
-      System.out.println("Is in range = Yes");
-    } else {
-      System.out.println("Is in range = No");
-    }
+    
+      System.out.println("Is in range = " + isInRange);
+    
+      
 
+      
 
     for (int i = 0; i < 2; i++) {
       System.out.println();
@@ -86,13 +97,13 @@ public class singleArmCodeStructure {
 
   }
 
-  static LinkedList<Double> topDownCheck() {
+  static LinkedList<Double> topDownCheck(double[] cords) {
 
     LinkedList<Double> output = new LinkedList<Double>();
 
 
-    double x =0;
-    double y =0;
+    double x =cords[0]-132.95; // Adjusting x coordinate to be relative to the leg's base position
+    double y =cords[1];
 
     double maxRadius = 132.95;
     double tarRadius;
@@ -102,10 +113,7 @@ public class singleArmCodeStructure {
 
     boolean isInRange = true;
 
-    System.out.println("Enter the target x:");
-    x = 132.95 - input.nextDouble();
-    System.out.println("Enter the target y:");
-    y = input.nextDouble();
+
 
     tarRadius = Math.sqrt(x*x + y*y);
 
@@ -123,14 +131,6 @@ public class singleArmCodeStructure {
     else {
       finRadius = tarRadius;
     }
-    
-    System.out.println();
-    System.out.println("x = " + x);
-    System.out.println("y = " + y);
-    System.out.println();
-    System.out.println("servo1 angle = " + angle1);
-    System.out.println("tarRadius = " + tarRadius);
-    System.out.println("isInRange = " + isInRange);
 
 
 
@@ -139,12 +139,11 @@ public class singleArmCodeStructure {
     return output;
   }
 
-  static LinkedList<Double> frontBackCheck(LinkedList<Double> methodInput) {
+  static LinkedList<Double> frontBackCheck(LinkedList<Double> methodInput, double z) {
 
     LinkedList<Double> output = new LinkedList<Double>();
 
     double R =methodInput.getFirst();
-    double z =0;
 
     double maxRadius = 132.95;
     double tarRadius;
@@ -155,8 +154,7 @@ public class singleArmCodeStructure {
     double isInRange = 1.0;
 
 
-    System.out.println("Enter the target z:");
-    z = input.nextDouble();
+  
 
     tarRadius = Math.sqrt(R*R + z*z);
 
@@ -178,13 +176,6 @@ public class singleArmCodeStructure {
      
     }
     
-    System.out.println();
-    System.out.println("R = " + R);
-    System.out.println("z = " + z);
-    System.out.println();
-    System.out.println("angle1 = " + angle1);
-    System.out.println("tarRadius = " + tarRadius);
-    System.out.println("isInRange = " + isInRange);
 
 
 
@@ -214,9 +205,7 @@ public class singleArmCodeStructure {
   output.addFirst(angleA);
   output.addLast(angleB);
 
-  
-  System.out.println("servo2 angle = " + angleA);
-  System.out.println("servo3 angle = " + angleB);
+
 
 
 
@@ -224,4 +213,66 @@ public class singleArmCodeStructure {
   return output;
 }
 
-}
+
+
+public static boolean rangeCheck(double[] cords) {
+  
+
+   
+
+
+    LinkedList<Double> methodInput2 = new LinkedList<Double>();
+
+
+    
+    double isInRange;
+    boolean inRangeOut = true;
+  
+
+
+    methodInput2 = topDownCheck(cords);
+
+ 
+    methodInput2.removeLast();
+
+
+
+
+
+    methodInput2 = frontBackCheck(methodInput2, cords[2]);
+    isInRange = methodInput2.getLast();
+    methodInput2.removeLast();
+    
+
+
+
+
+
+  
+  
+
+
+
+
+
+    
+     if (isInRange == 1.0) {
+       inRangeOut = true;
+     }
+     else {
+       inRangeOut = false;
+     }
+    
+      
+
+    
+    
+
+     return inRangeOut;
+  }
+
+
+
+
+  }
+
