@@ -457,7 +457,7 @@ static void joystickInput() { // get the joystick input also serves as a pause f
   float joystickYin;
 
   //code to get the joystick input and store it in the joystickX and joystickY variables
-  TODO: get joystick input and store it in the joystickX and joystickY variables
+  
 
 
   joystickX = joystickXin;
