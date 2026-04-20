@@ -34,10 +34,10 @@ float legsGroup2[3][3] // moving position for all 6 legs, will be updated every 
   {defaultX, defaultY, defaultZ}
 };
 
-const float mult = 5; // multiplier for how much the joystick input affects movement
+const float mult = 1/125; // multiplier for how much the joystick input affects movement (joystick gives a max radius of 125)
 
-static float joystickX; // variable to store the x value of the joystick input, will be updated every loop
-static float joystickY; // variable to store the y value of the joystick input, will be updated every loop
+static float joystickX; // variable to store the x value of the joystick input, will be updated multiple times every loop
+static float joystickY; // variable to store the y value of the joystick input, will be updated multiple times every loop
 
 
 /* leg setup
