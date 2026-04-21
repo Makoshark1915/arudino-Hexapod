@@ -1,11 +1,13 @@
 #include <Arduino.h>
 
+#include <SoftwareSerial.h>
+
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
 
 
-
+SoftwareSerial BTserial(8, 9); //rx tx
 
 
 
@@ -18,7 +20,7 @@
 
 const float defaultX = 132.95f; // default x value for the legs
 const float defaultY = 80.0f; // default y value for the legs
-const float defaultZ = 90.0f; // default z value for the 
+static float defaultZ = 90.0f; // default z value for the 
 
 
 float legsGroup1[3][3] // moving position for all 6 legs, will be updated every loop  in the format of legs{legnumber}{x,y,z}
@@ -40,6 +42,7 @@ static float joystickX; // variable to store the x value of the joystick input, 
 static float joystickY; // variable to store the y value of the joystick input, will be updated multiple times every loop
 
 
+
 /* leg setup
 
       front
@@ -54,7 +57,7 @@ static float joystickY; // variable to store the y value of the joystick input, 
 
 void setup() {
   Serial.begin(9600);
-
+  BTserial.begin(38400); // Required for Bluetooth communication
 
 }
 
@@ -92,7 +95,7 @@ static void moving(float joystickX, float joystickY) { // run the first step of 
     do{ // while the legs are in range and the first leg group is up, move the legs according to the joystick input
 
       legsGroup1[0][0] += joystickX * mult;
-      legsGroup1[0][1] += joystickY * mult; // joystickY for all of these might need to be flipped/have changed signs
+      legsGroup1[0][1] += joystickY * mult; // joystickY/X for all of these might need to be flipped/changed signs
  
       legsGroup1[1][0] += joystickX * mult;
       legsGroup1[1][1] += joystickY * mult; 
@@ -453,15 +456,37 @@ static int groupUp(){// checks which leg group is raised
 }
 
 static void joystickInput() { // get the joystick input also serves as a pause for the user to see the current leg positions before inputting new joystick values
-  float joystickXin;
-  float joystickYin;
+  String data = "0,0,0"; // String for storing incoming data from Bluetooth
+  int x;
+  int y;
+  int z;
 
-  //code to get the joystick input and store it in the joystickX and joystickY variables
+
+
+  if (BTserial.available()) { // Check if there is data available to read
+    
+    
+      data = BTserial.readStringUntil('\n'); // Read the incoming data as a string until a newline character is encountered
+      //Serial.println(data); // Print the received data to the serial monitor for debugging purposes
+  }
   
 
+  // Parse the received data into x, y, and z values
+  int firstCommaIndex = data.indexOf(','); // Find the index of the first comma
+  int secondCommaIndex = data.indexOf(',', firstCommaIndex + 1); // Find the index of the second comma  
+  int thirdCommaIndex = data.indexOf(',', secondCommaIndex + 1); // Find the index of the third comma
 
-  joystickX = joystickXin;
-  joystickY = joystickYin;
+  x = data.substring(0, firstCommaIndex).toInt(); // Extract the x value and convert it to an integer
+  y = data.substring(firstCommaIndex + 1, secondCommaIndex).toInt(); // Extract the y value and convert it to an integer
+  z = data.substring(secondCommaIndex + 1, thirdCommaIndex).toInt(); // Extract the z value and convert it to an integer
+
+  
+
+  
+  joystickX = x;
+  joystickY = y;
+  defaultZ = z;
+  
 }
 
 
