@@ -16,6 +16,17 @@ Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x41, Wire);// secondary 
 #define oscilatorFreq 27000000 // change this value between 23-27MHz to properly calibrate it
 
 
+static int angle0(int tarAngle) {
+
+tarAngle = round(map(tarAngle, 0, 180, sg90Min, sg90Max));
+
+return tarAngle;
+}
+static int angle1(int tarAngle) {
+  tarAngle = round(map(tarAngle, 0, 180, miscMin, miscMax));
+  return tarAngle;
+}
+
 void setup() {
 
 Serial.begin(9600);
@@ -33,54 +44,58 @@ pwm0.setOscillatorFrequency(oscilatorFreq);
 pwm1.setOscillatorFrequency(oscilatorFreq);
 
 
-  
+
+
+
 }
 
 void loop() {
   // sets all sg90's (board 1) and misc black servo's (board 2) to their minimum and maximum values with 1 second delay in between
 
-  pwm0.setPWM(0, 0, angle0(0));
-  pwm0.setPWM(1, 0, angle0(0));
-  pwm0.setPWM(2, 0, angle0(0));
-  pwm0.setPWM(3, 0, angle0(0));
-  pwm0.setPWM(4, 0, angle0(0));
-  pwm0.setPWM(5, 0, angle0(0));
-  pwm0.setPWM(6, 0, angle0(0));
-  pwm0.setPWM(7, 0, angle0(0));
-  pwm0.setPWM(8, 0, angle0(0));
-  pwm0.setPWM(9, 0, angle0(0));
-  pwm0.setPWM(10, 0, angle0(0));
-  pwm0.setPWM(11, 0, angle0(0));
+  pwm0.setPWM(0, 0, (angle0(0)));
+ /* pwm0.setPWM(1, 0, (angle0(0)));
+  pwm0.setPWM(2, 0, (angle0(0)));
+  pwm0.setPWM(3, 0, (angle0(0)));
+  pwm0.setPWM(4, 0, (angle0(0)));
+  pwm0.setPWM(5, 0, (angle0(0)));
+  pwm0.setPWM(6, 0, (angle0(0)));
+  pwm0.setPWM(7, 0, (angle0(0)));
+  pwm0.setPWM(8, 0, (angle0(0)));
+  pwm0.setPWM(9, 0, (angle0(0)));
+  pwm0.setPWM(10, 0, (angle0(0)));
+  pwm0.setPWM(11, 0, (angle0(0)));
 
 
-  pwm1.setPWM(0, 0, angle1(0));
-  pwm1.setPWM(1, 0, angle1(0));
-  pwm1.setPWM(2, 0, angle1(0));
-  pwm1.setPWM(3, 0, angle1(0));
-  pwm1.setPWM(4, 0, angle1(0));
-  pwm1.setPWM(5, 0, angle1(0));
+  pwm1.setPWM(0, 0, (angle1(0)));
+  pwm1.setPWM(1, 0, (angle1(0)));
+  pwm1.setPWM(2, 0, (angle1(0)));
+  pwm1.setPWM(3, 0, (angle1(0)));
+  pwm1.setPWM(4, 0, (angle1(0)));
+  pwm1.setPWM(5, 0, (angle1(0)));
+  */
   delay(1000);
 
 
-  pwm0.setPWM(0, 0, angle0(180));
-  pwm0.setPWM(1, 0, angle0(180));
-  pwm0.setPWM(2, 0, angle0(180));
-  pwm0.setPWM(3, 0, angle0(180));
-  pwm0.setPWM(4, 0, angle0(180));
-  pwm0.setPWM(5, 0, angle0(180));
-  pwm0.setPWM(6, 0, angle0(180));
-  pwm0.setPWM(7, 0, angle0(180));
-  pwm0.setPWM(8, 0, angle0(180));
-  pwm0.setPWM(9, 0, angle0(180));
-  pwm0.setPWM(10, 0, angle0(180));
-  pwm0.setPWM(11, 0, angle0(180));
-
-  pwm1.setPWM(0, 0, angle1(180));
-  pwm1.setPWM(1, 0, angle1(180));
-  pwm1.setPWM(2, 0, angle1(180));
-  pwm1.setPWM(3, 0, angle1(180));
-  pwm1.setPWM(4, 0, angle1(180));
-  pwm1.setPWM(5, 0, angle1(180));
+  pwm0.setPWM(0, 0, (angle0(180)));
+  /*pwm0.setPWM(1, 0, (angle0(180)));
+  pwm0.setPWM(2, 0, (angle0(180)));
+  pwm0.setPWM(3, 0, (angle0(180)));
+  pwm0.setPWM(4, 0, (angle0(180)));
+  pwm0.setPWM(5, 0, (angle0(180)));
+  pwm0.setPWM(6, 0, (angle0(180)));
+  pwm0.setPWM(7, 0, (angle0(180)));
+  pwm0.setPWM(8, 0, (angle0(180)));
+  pwm0.setPWM(9, 0, (angle0(180)));
+  pwm0.setPWM(10, 0, (angle0(180)));
+  pwm0.setPWM(11, 0, (angle0(180)));
+/*
+  pwm1.setPWM(0, 0, (angle1(180)));
+  pwm1.setPWM(1, 0, (angle1(180)));
+  pwm1.setPWM(2, 0, (angle1(180)));
+  pwm1.setPWM(3, 0, (angle1(180)));
+  pwm1.setPWM(4, 0, (angle1(180)));
+  pwm1.setPWM(5, 0, (angle1(180)));
+  */
   delay(1000);
 
   
@@ -88,17 +103,5 @@ void loop() {
 
 
 
-}
-
-static int angle0(int tarAngle) {
-
-tarAngle = round(map(tarAngle, 0, 180, sg90Min, sg90Max));
-
-return tarAngle;
-}
-static int angle1(int tarAngle) {
-
-tarAngle = round(map(tarAngle, 0, 180, miscMin, miscMax));
-return tarAngle;
 }
 
