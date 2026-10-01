@@ -10,6 +10,7 @@ String data = "0,0,0"; // String for storing incoming data from Bluetooth
 int x;
 int y;
 int z;
+
 void setup() {
   BTserial.begin(38400); // Required for Bluetooth communication
   Serial.begin(9600); // Required for serial communication with the computer

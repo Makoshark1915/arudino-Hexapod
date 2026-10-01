@@ -9,15 +9,6 @@
 
 SoftwareSerial BTserial(8, 9); //rx tx
 
-
-
-
-
-
-
-
-
-
 const float defaultX = 132.95f; // default x value for the legs
 const float defaultY = 80.0f; // default y value for the legs
 static float defaultZ = 90.0f; // default z value for the 
