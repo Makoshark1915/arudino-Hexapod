@@ -4,13 +4,13 @@
 
 Servo left;
 Servo right;
-Servo tilt;
 
-double segmentLength = 75;
-double Odist = 12.2;
 
-double x = 50;
-double y = 10;
+const double segmentLength = 75;
+const double Odist = 12.2;
+
+double x = 100;
+double y = 100;
 
 bool up = false;
 
@@ -27,11 +27,28 @@ double rightExternal;
 double leftFinal;
 double rightFinal;
 
+/*
+x range = 224.4, -112.2 to 112.2
+y range = 144, 0 to 144
+
+input range = 0 to 1023
+*/
+const double xRate = 244.4 / 1023 - (244.4/2);
+const double yRate =  144 / 1023;
+
+const byte xIn = A0;
+const byte yIn = A1;
+
+
+
+
 void setup() {
 
+  pinMode(xIn, INPUT);
+  pinMode(yIn, INPUT);
+  
   left.attach(9);
   right.attach(10);
-  tilt.attach(11);
 
   Serial.begin(9600);
   
@@ -39,13 +56,17 @@ void setup() {
 
 void loop() {
 
+x = analogRead(xIn)*(244.4 / 1023) - (244.4/2);
+y = analogRead(yIn)*(144/1023);
+
+Serial.print("x: ");
+Serial.print(x);
+
+Serial.print("       y: ");
+Serial.println(y);
+
 
 servoSet();
-
-
-
-
-
 
 }
 
@@ -152,17 +173,12 @@ rightFinal = abs(rightExternal + rightInternal - 45 - 180);
 
 if(isnan(leftFinal) || isnan(rightFinal)){
 
-  Serial.println("cords are out of arm range")
+  //Serial.println("cords are out of arm range")
   return false;
 
 }
 else{
 
-Serial.print("leftFin: ");
-Serial.print(leftFinal);
-
-Serial.print("       rightFin: ");
-Serial.println(rightFinal);
 
 left.write(leftFinal);
 right.write(rightFinal);
