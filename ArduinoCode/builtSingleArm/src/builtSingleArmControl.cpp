@@ -2,7 +2,6 @@
 #include <Servo.h>
 #include <math.h>
 
-
 Servo left;
 Servo right;
 Servo tilt;
@@ -24,6 +23,9 @@ double rightInternal;
 
 double leftExternal;
 double rightExternal;
+
+double leftFinal;
+double rightFinal;
 
 void setup() {
 
@@ -101,43 +103,71 @@ rightInternal = (acos((sq(aLeft)+sq(Odist)-sq(aRight))/
 
 /*find the external left and right angles
 
-                           /|             |\
-                          / |             | \
-                         /  |             |  \
-           segmentLength/   |             |   \segmentLength
-                       /    |aLeft  aRight|    \
-                      /     |             |     \
-                     /      |             |      \
-                     \      |             |      /
-                      \θleft|             |θrigt/
-                       \    |             |    /
+                /|             |\
+               / |             | \
+              /  |             |  \
+segmentLength/   |             |   \segmentLength
+            /    |aLeft  aRight|    \
+           /     |             |     \
+          /      |             |      \
+          \      |             |      /
+           \θleft|             |θrigt/
+            \    |             |    /
 segmentLength\   |             |   /segmentLength
               \  |             |  /
                \ |             | /
                 \|             |/
 
-
-
-
-
+external angles found with cosine law
 */
 
 
+leftExternal = (acos((sq(aRight)+sq(segmentLength)-sq(segmentLength))/
+(2*aRight*segmentLength)))*180/PI;
+
+rightExternal = (acos((sq(aLeft)+sq(segmentLength)-sq(segmentLength))/
+(2*aLeft*segmentLength)))*180/PI;
+
+
+/*
+by adding the internal and external angles we can find the total angle from
+the front of the leg (facing out from the servos/towrds the arms)
+
+and then arrange them for use to send to the 
+servos (angle range measured from the same spot is 45 - 225)
+
+by taking the total angle and minusing 45 we can determine the desired servo angle away from center
+
+then by minusing 180 from one of the values (do the right servo)
+we can determin the angle that both servos will be given
 
 
 
+angleright = internal + external - 45 - 180
+*/
 
-Serial.println(rightInternal);
-
-
-
-
-
+leftFinal = leftExternal + leftInternal -45;
+rightFinal = abs(rightExternal + rightInternal - 45 - 180);
 
 
+if(isnan(leftFinal) || isnan(rightFinal)){
 
+  Serial.println("cords are out of arm range")
+  return false;
 
+}
+else{
 
+Serial.print("leftFin: ");
+Serial.print(leftFinal);
 
+Serial.print("       rightFin: ");
+Serial.println(rightFinal);
 
+left.write(leftFinal);
+right.write(rightFinal);
+
+return true;
+
+}
 }
