@@ -57,7 +57,7 @@ void setup() {
 void loop() {
 
 x = analogRead(xIn)*(244.4 / 1023) - (244.4/2);
-y = analogRead(yIn)*(144/1023);
+y = analogRead(yIn)*(144.0/1023);
 
 Serial.print("x: ");
 Serial.print(x);
@@ -110,7 +110,7 @@ aRight = sqrt(sq(x)+ sq(y-Odist/2));
              /        \
             /          \
            /θleft θright\
-          /--------------\          
+          /______________\          
               Odist
 
       using cosine law to solve for internal angles (left/rightInternal)
