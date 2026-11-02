@@ -11,37 +11,209 @@ SoftwareSerial BTserial(8, 9); //rx tx
 
 const float defaultX = 132.95f; // default x value for the legs
 const float defaultY = 80.0f; // default y value for the legs
-static float defaultZ = 90.0f; // default z value for the 
+float standingHeight = 90.0f; // current standing height (90 by default)
 
 
-float legsGroup1[3][3] // moving position for all 6 legs, will be updated every loop  in the format of legs{legnumber}{x,y,z}
-= {
-  {defaultX, defaultY, defaultZ},
-  {defaultX, defaultY, defaultZ},
-  {defaultX, defaultY, defaultZ}
+
+class JoystickClass {
+
+  public:
+    int[] cords;
+
+    void update() { // update the joystick coordinates by reading data from Bluetooth
+      String data = "0,0,0"; // String for storing incoming data from Bluetooth
+
+      if (BTserial.available()) { // Check if there is data available to read
+          data = BTserial.readStringUntil('\n'); // Read the incoming data as a string until a newline character is encountered
+          Serial.println(data); // Print the received data to the serial monitor for debugging purposes
+      }
+      
+
+      // Parse the received data into x, y, and z values
+      int firstCommaIndex = data.indexOf(','); // Find the index of the first comma
+      int secondCommaIndex = data.indexOf(',', firstCommaIndex + 1); // Find the index of the second comma  
+      int thirdCommaIndex = data.indexOf(',', secondCommaIndex + 1); // Find the index of the third comma
+
+      cords[0] = data.substring(0, firstCommaIndex).toInt(); // Extract the x value and convert it to an integer
+      cords[1] = data.substring(firstCommaIndex + 1, secondCommaIndex).toInt(); // Extract the y value and convert it to an integer
+      cords[2] = data.substring(secondCommaIndex + 1, thirdCommaIndex).toInt(); // Extract the z value and convert it to an integer
+   
+    }
+
+    boolean atRest() { // check if the joystick is at rest
+
+
+      update(); // Call the update() method to update the joystick coordinates
+
+      return (cords[0] == 0 && cords[1] == 0); // Return true if the joystick is at rest (x and y coordinates are both 0), otherwise return false
+    }
+
+    getX() { // get the x value of the joystick
+      update(); // Call the update() method to update the joystick coordinates
+      return cords[0]; // Return the x coordinate of the joystick
+    }
+
+    getY() { // get the y value of the joystick
+      update(); // Call the update() method to update the joystick coordinates
+      return cords[1]; // Return the y coordinate of the joystick
+    }
+
+    getZ() { // get the z value of the joystick
+      update(); // Call the update() method to update the joystick coordinates
+      return cords[2]; // Return the z coordinate of the joystick
+    }
 };
-float legsGroup2[3][3] // moving position for all 6 legs, will be updated every loop  in the format of legs{legnumber}{x,y,z}
-= {
-  {defaultX, defaultY, defaultZ},
-  {defaultX, defaultY, defaultZ},
-  {defaultX, defaultY, defaultZ}
-};
 
-const float mult = 1/125; // multiplier for how much the joystick input affects movement (joystick gives a max radius of 125)
+class legClass {
+  public:
+    legClass(boolean groupIn, int legNumberIn, float[] defaultCords) { // constructor for the legClass
+      group = groupIn; // set the group of the leg (0 or 1)
+      legNumber = legNumberIn; // set the number of the leg (0, 1, or 2)
+      x = defaultCords[0]; // set the x coordinate of the leg
+      y = defaultCords[1]; // set the y coordinate of the leg
+      z = defaultCords[2]; // set the z coordinate of the leg
 
-static float joystickX; // variable to store the x value of the joystick input, will be updated multiple times every loop
-static float joystickY; // variable to store the y value of the joystick input, will be updated multiple times every loop
+      curX = x; // set the current x coordinate of the leg
+      curY = y; // set the current y coordinate of the leg
+      curZ = z; // set the current z coordinate of the leg
+
+      if(group == false){ // if the leg is in group 0, set the servo pins for the leg
+        if(legNumber == 0){
+          close = 0;
+          mid = 0;
+          far = 1;
+        }
+        else if(legNumber == 1){
+          close = 1;
+          mid = 2;
+          far = 3;
+        }
+        else if(legNumber == 2){
+          close = 2;
+          mid = 4;
+          far = 5;
+        }
+      }
+      else{ // if the leg is in group 1, set the servo pins for the leg
+        if(legNumber == 0){
+          close = 3;
+          mid = 6;
+          far = 7;
+        }
+        else if(legNumber == 1){
+          close = 4;
+          mid = 8;
+          far = 9;
+        }
+        else if(legNumber == 2){
+          close = 5;
+          mid = 10;
+          far = 11;
+        }
+      }
+
+
+
+
+    }
+
+    boolean group; // group of the leg (0 or 1)
+    int legNumber; // number of the leg (0, 1, or 2)
+
+    float x;
+    float y;
+    float z;
+
+    float curX;
+    float curY;
+    float curZ;
+    
+    byte close;
+    byte mid;
+    byte far;
+
+    boolean state = false; // state of the leg (true for up, false for down)
+
+    void stateChange(){ // used to change the state of the leg (up or down) and adjust the z coordinate accordingly
+
+      if(state){
+        z -= 10; // if the leg is up, lower it by 10 units
+      }
+      else{
+        z += 10; // if the leg is down, raise it by 10 units
+      }
+
+      z = curZ; // set the z coordinate of the leg to the current z coordinate
+      state = !state; // toggle the state of the leg
+    }
+
+    void updateCords(){ // update the current coordinates of the leg to move towards the target coordinates (x, y, z)
+      float xdiff = x - curX;
+      float ydiff = y - curY;
+      float zdiff = z - curZ;
+
+      if(xdiff > 0){
+
+        curX += sq(xdiff)/100; // if the x coordinate is less than the current x coordinate, increase the current x coordinate by square of the difference divided by 100
+      }
+      else if(xdiff < 0){
+        curX -= sq(xdiff)/100; // if the x coordinate is greater than the current x coordinate, decrease the current x coordinate by square of the difference divided by 100  
+      }
+
+
+      if(ydiff > 0){
+        curY += sq(ydiff)/100; // if the y coordinate is less than the current y coordinate, increase the current y coordinate by square of the difference divided by 100
+      }
+      else if(ydiff < 0){
+        curY -= sq(ydiff)/100; // if the y coordinate is greater than the current y coordinate, decrease the current y coordinate by square of the difference divided by 100  
+      }
+
+      if(zdiff > 0){
+        curZ += sq(zdiff)/100; // if the z coordinate is less than the current z coordinate, increase the current z coordinate by square of the difference divided by 100
+      }
+      else if(zdiff < 0){
+        curZ -= sq(zdiff)/100; // if the z coordinate is greater than the current z coordinate, decrease the current z coordinate by square of the difference divided by 100  
+      }
+
+    }
+  
+    void updateServos(){ // update the servo positions based on the current coordinates of the leg
+
+
+
+
+      
+    }
+  
+  
+  
+  
+  
+  
+  
+  }
+
+
+JoystickClass joystick; // create an instance of the JoystickClass
+
+legClass leg0_0(false, 0, {defaultX, defaultY, standingHeight}); // create an instance of the legClass for leg 0-0
+legClass leg0_1(false, 1, {defaultX, defaultY, standingHeight}); // create an instance of the legClass for leg 0-1
+legClass leg0_2(false, 2, {defaultX, defaultY, standingHeight}); // create an instance of the legClass for leg 0-2
+
+legClass leg1_0(true, 0, {defaultX, defaultY, standingHeight}); // create an instance of the legClass for leg 1-0
+legClass leg1_1(true, 1, {defaultX, defaultY, standingHeight}); // create an instance of the legClass for leg 1-1
+legClass leg1_2(true, 2, {defaultX, defaultY, standingHeight}); // create an instance of the legClass for leg 1-2
 
 
 
 /* leg setup
 
       front
-    1-1   2-1   
+    0-0   1-0   
 
-  2-2       1-2
+  1-1       0-1
 
-    1-3   2-3
+    0-2   1-2
        back
 
 */
@@ -50,436 +222,50 @@ void setup() {
   Serial.begin(9600);
   BTserial.begin(38400); // Required for Bluetooth communication
 
+  Serial.println("bluetooth comm initialized");
+
+  while(!BTserial.available()){
+      Serial.println("waiting for bluetooth connection");
+  }
+  
 }
 
 void loop() {
 
-  joystickInput(); // get the joystick input and store it in the joystickX and joystickY variables
+  if(joystick.atRest()){ // if the joystick is at rest go to default or else, start moving
 
-  if(joystickAtRest()){ // if the joystick is at rest go to default or else, start moving
-
-    reCenter(); // if the joystick is in the neutral position, run the code to re-center the legs to the default position
+    reCenter(); // if the joystick is at rest, run the code to re-center the legs to the default position
 
   }
 
   else{
-    moving(joystickX, joystickY);// the code to move the legs according to the joystick input and the current scenario of which leg group is up (only runs if the joystick is not in the neutral position )
+    moving(joystick.getX(), joystick.getY(), joystick.getZ());// the code to move the legs according to the joystick x,y,z
   }
   
 
 }
 
+void reCenter() { // run re-center the legs to the default position
+  leg0_0.x = defaultX;
+  leg0_0.y = defaultY;
+
+  leg0_1.x = defaultX;
+  leg0_1.y = defaultY;
+
+  leg0_2.x = defaultX;
+  leg0_2.y = defaultY;
 
 
+  leg1_0.x = defaultX;  
+  leg1_0.y = defaultY;
 
+  leg1_1.x = defaultX;
+  leg1_1.y = defaultY;
 
-static void moving(float joystickX, float joystickY) { // run the first step of walking cycle
-
-    if(groupUp() == 0 || groupUp() == 1){
-
-      legsGroup1[0][2] = defaultZ-10;
-      legsGroup1[1][2] = defaultZ-10;
-      legsGroup1[2][2] = defaultZ-10;
-      applyChanges();
-
-
-    do{ // while the legs are in range and the first leg group is up, move the legs according to the joystick input
-
-      legsGroup1[0][0] += joystickX * mult;
-      legsGroup1[0][1] += joystickY * mult; // joystickY/X for all of these might need to be flipped/changed signs
- 
-      legsGroup1[1][0] += joystickX * mult;
-      legsGroup1[1][1] += joystickY * mult; 
-
-      legsGroup1[2][0] += joystickX * mult;
-      legsGroup1[2][1] += joystickY * mult;
-
-
-      legsGroup2[0][0] -= joystickX * mult;
-      legsGroup2[0][1] -= joystickY * mult;
-
-      legsGroup2[1][0] -= joystickX * mult;
-      legsGroup2[1][1] -= joystickY * mult;
-
-      legsGroup2[2][0] -= joystickX * mult;
-      legsGroup2[2][1] -= joystickY * mult;
-
-      joystickInput();
-      applyChanges();
-      
-    }while(inRange() && joystickAtRest() == false);
-
-      legsGroup2[0][2] = defaultZ-10;
-      legsGroup2[1][2] = defaultZ-10;
-      legsGroup2[2][2] = defaultZ-10;
-
-      legsGroup1[0][2] = defaultZ;
-      legsGroup1[1][2] = defaultZ;
-      legsGroup1[2][2] = defaultZ;
-
-
-      applyChanges();
-
-
-
-
-  }
-  else if(groupUp() == 2){
-
-    do{ // while the legs are in range and the first leg group down, move the legs according to the joystick input
-
-      legsGroup1[0][0] -= joystickX * mult;
-      legsGroup1[0][1] -= joystickY * mult; // joystickY for all of these might need to be flipped/have changed signs
- 
-      legsGroup1[1][0] -= joystickX * mult;
-      legsGroup1[1][1] -= joystickY * mult;
-
-      legsGroup1[2][0] -= joystickX * mult; 
-      legsGroup1[2][1] -= joystickY * mult;
-
-
-      legsGroup2[0][0] += joystickX * mult;
-      legsGroup2[0][1] += joystickY * mult;
-
-      legsGroup2[1][0] += joystickX * mult;
-      legsGroup2[1][1] += joystickY * mult;
-
-      legsGroup2[2][0] += joystickX * mult;
-      legsGroup2[2][1] += joystickY * mult;
-
-      joystickInput();
-
-    }while(inRange() && joystickAtRest() == false);
-
-      legsGroup1[0][2] = defaultZ-10;
-      legsGroup1[1][2] = defaultZ-10;
-      legsGroup1[2][2] = defaultZ-10;
-
-      legsGroup2[0][2] = defaultZ;
-      legsGroup2[1][2] = defaultZ;
-      legsGroup2[2][2] = defaultZ;
-
-
-
-  }
-  else{
-    while (true){
-    Serial.println("ERROR bad read on Scenario");
-    }
-  }
-
-
-
-
-
-
-
-
-  }
-
-static void reCenter() { // run re-center the legs to the default position
-  legsGroup1[0][0] = defaultX;
-  legsGroup1[0][1] = defaultY;
-  legsGroup1[0][2] = defaultZ;
-
-  legsGroup1[1][0] = defaultX;
-  legsGroup1[1][1] = defaultY;
-  legsGroup1[1][2] = defaultZ;
-
-  legsGroup1[2][0] = defaultX;
-  legsGroup1[2][1] = defaultY;
-  legsGroup1[2][2] = defaultZ;
-
-
-  legsGroup2[0][0] = defaultX;
-  legsGroup2[0][1] = defaultY;
-  legsGroup2[0][2] = defaultZ;
-
-  legsGroup2[1][0] = defaultX;
-  legsGroup2[1][1] = defaultY;
-  legsGroup2[1][2] = defaultZ;
-
-  legsGroup2[2][0] = defaultX;
-  legsGroup2[2][1] = defaultY;
-  legsGroup2[2][2] = defaultZ;
+  leg1_2.x = defaultX;
+  leg1_2.y = defaultY;
 
 }
-
-static void applyChanges() { // apply the changes to the legs
-
-    
-  float cords[3];
-  boolean towards = true;
-
-
-
-  for(int i = 0; i < 6; i++){
-   
-    if(i<=2){
-
-      cords[0] = legsGroup1[i][0]-defaultX;
-      cords[1] = legsGroup1[i][1];
-      cords[2] = legsGroup1[i][2];
-
-    }
-    else{
-
-      cords[0] = legsGroup2[i-3][0]-defaultX;
-      cords[1] = legsGroup2[i-3][1];
-      cords[2] = legsGroup2[i-3][2];
-
-    }
-    
-
-    float angle1;
-    float angle2;
-    float angle3;
-
-    float x = defaultX - cords[0];
-    float y = cords[1];
-    float z = cords[2];
-
-    float tarRadiusT = sqrt(x*x + y*y);
-    float finRadiusT;
-
-    angle1 = (atan2(y, x) * 180 / PI);
-
-      if (tarRadiusT > defaultX) {
-        
-
-
-        x = defaultX * cos(angle1);
-        y = defaultX * sin(angle1); 
-
-        finRadiusT = defaultX;
-      } 
-      else {
-        finRadiusT = tarRadiusT;
-      }
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-
-  
-    float R = finRadiusT;
-
-    float finRadiusFB;
-
-    float tarRadiusFB = sqrt(R*R + z*z);
-    
-    
-    float angleA = (atan2(z,R) * 180 / PI);
-
-      
-    if (tarRadiusFB > defaultX) {
-      
-      R = defaultX * cos(angleA);
-      z = defaultX * sin(angleA);
-
-      finRadiusFB = defaultX;
-
-    }
-    else {
-      finRadiusFB = tarRadiusFB;
-    }
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////  
-    
-  float a = 47.6;
-  float b = 85.35;
-  float c = finRadiusFB;
-
-  angle2 = (acos((a*a + c*c - b*b) / (2*c*a)) * 180 / PI);
-  angle3 = (acos((b*b + a*a - c*c) / (2*a*b)) * 180 / PI);
-
-  angle2 -= angleA;
-  angle2 = 90 - angle2;
-
-  angle3 = angle3 - 90;
-
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-    if(i==0){
-      /*
-      1-1close.write(angle1)
-      1-1mid.write(angle2)
-      1-1far.write(angle3)
-      */
-    }
-    else if(i==1){
-      /*
-      1-2close.write(angle1)
-      1-2mid.write(angle2)
-      1-2far.write(angle3)
-      */      
-    }
-    else if(i==2){
-      /*
-      1-3close.write(angle1)
-      1-3mid.write(angle2)
-      1-3far.write(angle3)
-      */    
-     }
-    else if(i==3){
-      /*
-      2-1close.write(angle1)
-      2-1mid.write(angle2)
-      2-1far.write(angle3)
-      */    
-     }
-    else if(i==4){
-      /*
-      2-2close.write(angle1)
-      2-2mid.write(angle2)
-      2-2far.write(angle3)
-      */    
-     }
-    else if(i==5){
-      /*
-      2-3close.write(angle1)
-      2-3mid.write(angle2)
-      2-3far.write(angle3)
-      */   
-     }
-
-}
-}
-
-static boolean inRange() { // check's if the given xyz values for all legs are in a reachable position
-boolean inRangeOut = true;
-
-double cords[3];
-
-
-double R1;
-double R2;
-
-  for(int i = 0; i < 6; i++){
-   
-    if(i<=2){
-
-      cords[0] = legsGroup1[i][0]-defaultX;
-      cords[1] = legsGroup1[i][1];
-      cords[2] = legsGroup1[i][2];
-
-    }
-    else{
-
-      cords[0] = legsGroup2[i-3][0]-defaultX;
-      cords[1] = legsGroup2[i-3][1];
-      cords[2] = legsGroup2[i-3][2];
-
-
-
-
-    }
-
-
-    R1 = sqrt((cords[0]*cords[0]) + (cords[1]*cords[1]));
-    R2 = sqrt((R1*R1) + (cords[2]*cords[2]));
-
-
-
-    if(R1 > defaultX || R2 > defaultX){
-      inRangeOut = false;
-      break;
-    }
-    
-
-  }
-
-
-
- 
-  return inRangeOut;
- 
-}
-
-static boolean joystickAtRest() { // check if the joystick is in the neutral position
-
-
-  boolean atRest = false;
-
-  if(joystickX == 0 && joystickY == 0){
-    atRest = true;
-  }
-
-  return atRest;
-}
-
-static int groupUp(){// checks which leg group is raised
-
-  
-  
-  int scenario;
-  
-  if(legsGroup1[0][2]==defaultZ && legsGroup2[0][2]==defaultZ){//at default both groups are down, scenario 0
-
-      scenario = 0;
-      
-  }
-    else if(legsGroup1[0][2] == defaultZ-10 && legsGroup2[0][2] == defaultZ){ //group 1 is up and group2 is down, scenario 1
-
-      scenario = 1;
-
-    } 
-    else if(legsGroup2[0][2] == defaultZ-10 && legsGroup1[0][2] == defaultZ){ //group 1 is down and group2 is up, scenario 2
-
-      scenario = 2;
-
-    }
-    else
-    {    
-       while (true){
-
-        Serial.println("ERROR bad Scenario");
-
-        } // if in none of the previous options something broke run ERROR
-    }
-
-
-
-    return scenario;
-}
-
-static void joystickInput() { // get the joystick input also serves as a pause for the user to see the current leg positions before inputting new joystick values
-  String data = "0,0,0"; // String for storing incoming data from Bluetooth
-  int x;
-  int y;
-  int z;
-
-
-
-  if (BTserial.available()) { // Check if there is data available to read
-    
-    
-      data = BTserial.readStringUntil('\n'); // Read the incoming data as a string until a newline character is encountered
-      //Serial.println(data); // Print the received data to the serial monitor for debugging purposes
-  }
-  
-
-  // Parse the received data into x, y, and z values
-  int firstCommaIndex = data.indexOf(','); // Find the index of the first comma
-  int secondCommaIndex = data.indexOf(',', firstCommaIndex + 1); // Find the index of the second comma  
-  int thirdCommaIndex = data.indexOf(',', secondCommaIndex + 1); // Find the index of the third comma
-
-  x = data.substring(0, firstCommaIndex).toInt(); // Extract the x value and convert it to an integer
-  y = data.substring(firstCommaIndex + 1, secondCommaIndex).toInt(); // Extract the y value and convert it to an integer
-  z = data.substring(secondCommaIndex + 1, thirdCommaIndex).toInt(); // Extract the z value and convert it to an integer
-
-  
-
-  
-  joystickX = x;
-  joystickY = y;
-  defaultZ = z;
-  
-}
-
 
 
 
