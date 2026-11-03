@@ -16,7 +16,7 @@ Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x41, Wire);// secondary 
 #define oscilatorFreq 27000000 // change this value between 23-27MHz to properly calibrate it
 
 
-static int angle0(int tarAngle) {
+static int angle(int tarAngle) {
 
 tarAngle = round(map(tarAngle, 0, 180, sg90Min, sg90Max));
 
